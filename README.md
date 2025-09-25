@@ -1,0 +1,48 @@
+# message-forward
+
+## Setup
+
+Create `.env` file in the root of the project with the following content, replacing `<your-...>` with your own values (remove `<` and `>` as well).
+
+```env
+
+#region Telegram
+
+# Use @BotFather to get the token
+TELEGRAM_BOT_TOKEN=<your-token>
+
+# Get chat ID by /ping your bot
+USER_PRIVATE_CHAT_ID=<your-private-chat-id>
+
+#endregion
+
+#region Zulip
+
+# Your Zulip account email
+ZULIP_EMAIL=<your-account-email>
+
+# Get API key based on https://zulip.com/api/api-keys
+ZULIP_KEY=<your-API-key>
+
+# The URL of your Zulip organization server
+ZULIP_SITE=<your-zulip-organization-url>
+
+#endregion
+
+```
+
+## Development
+
+To install dependencies:
+
+```bash
+bun install
+```
+
+To run:
+
+```bash
+bun run 
+```
+
+This project was created using `bun init` in bun v1.2.19. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

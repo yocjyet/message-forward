@@ -1,0 +1,20 @@
+{
+  "name": "message-forward",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/marked": "^6.0.0",
+    "adze": "^2.2.5",
+    "gramio": "^0.4.11",
+    "marked": "^16.3.0",
+    "zulip-js": "^2.1.0"
+  }
+}
