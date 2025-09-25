@@ -1,5 +1,7 @@
 # message-forward
 
+![Version](https://img.shields.io/github/package-json/v/yocjyet/message-forward?color=blue&logo=github)
+
 A simple tool to forward messages from Zulip to Telegram.
 
 ## Setup
@@ -45,6 +47,16 @@ To run:
 
 ```bash
 bun run 
+```
+
+### Release
+
+To release a new version, change the version in `package.json` and run:
+
+```bash
+git commit -m "chore(release): bump to v0.1.1"
+git tag v0.1.1
+git push origin main --tags
 ```
 
 ## License
