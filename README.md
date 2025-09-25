@@ -1,5 +1,7 @@
 # message-forward
 
+A simple tool to forward messages from Zulip to Telegram.
+
 ## Setup
 
 Create `.env` file in the root of the project with the following content, replacing `<your-...>` with your own values (remove `<` and `>` as well).
@@ -45,4 +47,6 @@ To run:
 bun run 
 ```
 
-This project was created using `bun init` in bun v1.2.19. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## License
+
+Copyright (c) 2025 Cjyet Yo. [MIT License](LICENSE).
