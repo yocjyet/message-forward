@@ -1,0 +1,28 @@
+*
+
+!.Dockerfile
+!package.json
+!bun.lockb*
+!src/**
+
+# Useful project docs (optional)
+!README.md
+!LICENSE
+
+# Never include local environment or VCS data
+.git
+.git/**/*
+.env
+.env.*
+.vscode
+.idea
+node_modules
+dist
+build
+coverage
+.cache
+*.tsbuildinfo
+*.log
+.DS_Store
+Thumbs.db
+
