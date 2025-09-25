@@ -1,141 +1,10 @@
-const testStr = `**bold**, *italic*, and ~~strikethrough~~ text
-***~~All three at once~~***
-
-* bulleted lists
-  * with sub-bullets too
-  * sub-bullets start with 2 spaces
-    * start sub-sub-bullets with 4 spaces
-* multi
-line
-bullet
-- dashes and
-+ pluses are ok too
-
-1. numbered lists
-1. increment automatically
-   1. use nested lists if you like
-   3. delete or reorder lines without fixing the numbering
-1. one more
-   17. lists can start at any number
-   18. so you can continue a list after some other text
-
-Named link: [Zulip homepage](zulip.com)
-A URL (links automatically): zulip.com
-Channel link: #**channel name**
-Topic link: #**channel name>topic name**
-Message link: #**channel name>topic name@123**
-Custom linkifier: For example, #2468 can automatically link to an issue in your tracker.
-
-Inline code span: \`let x = 5\`
-
-Code block:
-\`\`\`
-def f(x):
-   return x+1
-\`\`\`
-
-Syntax highlighting:
-\`\`\`python
-def fib(n):
-    # TODO: base case
-    return fib(n-1) + fib(n-2)
-\`\`\`
-
-Inline: $$O(n^2)$$
-
-Displayed:
-\`\`\` math
-\int_a^b f(t)\, dt = F(b) - F(a)
-\`\`\`
-
-> a multi-line
-quote on two lines
-
-normal text
-
-\`\`\`quote
-A multi-paragraph
-
-quote in two paragraphs
-\`\`\`
-
-\`\`\`spoiler The spoiler heading might summarize what's inside
-This content is initially hidden.
-
-> You can combine spoilers with other formatting.
-
-\`\`\`
-
-A message can contain both spoilers and other content.
-
-\`\`\`spoiler
-Leave the heading blank if you like.
-\`\`\`
-\`\`\`
-
-:octopus: :heart: :zulip: :)
-
-Users: @**Bo Lin** or @**Ariella Drake|26** (two \`*\`)
-User group: @*support team* (one \`*\`)
-Silent mention: @_**Bo Lin** or @_**Ariella Drake|26** (\`@_\` instead of \`@\`)
-Wildcard mentions: @**all**, @**everyone**, @**channel**, @**topic** (two \`*\`)
-
-/me is away
-
-Our next meeting is scheduled for <time:2024-08-06T17:00:00+01:00>.
-
-|| yes | no | maybe
-|---|---|:---:|------:
-| A | left-aligned | centered | right-aligned
-| B |     extra      spaces      |  are |  ok
-| C | **bold** *italic* ~~strikethrough~~  :smile:  ||
-
-/poll What did you drink this morning?
-Milk
-Tea
-Coffee
-
-/todo Today's tasks
-Task 1: This is the first task.
-Task 2: This is the second task.
-Last task
-
-One blank space for a new paragraph
-New line, same paragraph
-
-New paragraph
-
----, ***, or ___ for a horizontal line
-Over the line
-
----
-
-Under the line
-`;
-
 import { marked, type Token, type Tokens } from 'marked';
-
-marked.setOptions({
-  gfm: true,
-  breaks: true,
-});
-
-console.log(marked.lexer(testStr));
-
-const g = `abc ${bold`b`} cde ${italic`f`}`;
-console.log(g);
-console.log(format`${g}`);
-console.log(format`${g}`.toString());
-console.log(format`${g}`.toJSON());
-
 import {
   formatSaveIndents as format,
   join as fmtJoin,
   bold,
   italic,
-  underline,
   strikethrough,
-  spoiler,
   code,
   pre,
   blockquote,
@@ -143,6 +12,11 @@ import {
   type FormattableString,
   type Stringable,
 } from '@gramio/format';
+
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 // --- helpers ---------------------------------------------------------------
 
