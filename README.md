@@ -1,6 +1,6 @@
 # message-forward
 
-![Version](https://img.shields.io/github/package-json/v/yocjyet/message-forward?color=blue&logo=github)
+![Version](https://img.shields.io/github/package-json/v/yocjyet/message-forward?color=blue&logo=github) [![GHCR](https://img.shields.io/badge/GHCR-message--forward-blue?logo=github)](https://github.com/yocjyet/message-forward/pkgs/container/message-forward)
 
 A simple tool to forward messages from Zulip to Telegram.
 
