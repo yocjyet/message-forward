@@ -33,6 +33,28 @@ ZULIP_SITE=<your-zulip-organization-url>
 
 #endregion
 
+## Docker
+
+Create a `docker-compose.yml` file in the root of the project with the following content:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/yocjyet/message-forward:latest  # <- use your owner/repo
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_USER_PRIVATE_CHAT_ID: ${TELEGRAM_USER_PRIVATE_CHAT_ID}
+      ZULIP_SITE: ${ZULIP_SITE}
+      ZULIP_EMAIL: ${ZULIP_EMAIL}
+      ZULIP_KEY: ${ZULIP_KEY}
+```
+
+and run:
+
+```bash
+docker-compose up -d
 ```
 
 ## Development
