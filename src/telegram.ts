@@ -85,10 +85,20 @@ export class TelegramService {
     const withLine = data.with && data.with.length > 0 ? `With: ${data.with.join(', ')}` : '';
 
     const content = expandableBlockquote`${data.content}`;
-    await this.bot.api.sendMessage({
-      chat_id: chatId,
-      text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}`,
-    });
+    try {
+      await this.bot.api.sendMessage({
+        chat_id: chatId,
+        text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}`,
+      });
+    } catch (error) {
+      adze.error('Error sending forwarded message', error);
+      await this.bot.api.sendMessage({
+        chat_id: chatId,
+        text: format`${header}\n${from}${
+          withLine ? '\n' + withLine : ''
+        }\n\n${bold`Error:`} Cannot format forwarded message`,
+      });
+    }
   }
 
   /** Convenience: send to the operator’s private DM if configured. */
