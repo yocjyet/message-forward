@@ -147,8 +147,13 @@ export function convertToken(token: Token | undefined, options?: { baseUrl?: str
       const t = token as Tokens.Link;
       const label = convertInlines(t.tokens, options);
       const href = resolveHref(t.href, options?.baseUrl);
-      // GramIO link cannot combine with code/pre (which we don’t here)
-      return link(label, href);
+      // Only create Telegram link entities for http/https URLs; otherwise wrap in inline code
+      if (/^https?:\/\//i.test(href)) {
+        return link(label, href);
+      }
+      // Use the visible text if present; otherwise, fall back to the raw href
+      const visible = t.text && t.text.trim().length > 0 ? t.text : t.href;
+      return code(visible);
     }
 
     case 'image': {
