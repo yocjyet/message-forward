@@ -66,7 +66,7 @@ export class TelegramService {
     if (!this.userChatId) {
       adze.warn('USER_PRIVATE_CHAT_ID is not set; cannot send DM to the operator.');
     } else {
-      this.sendToUser('Bot launched at ' + new Date().toISOString(), false);
+      this.sendToUser(`Bot v${process.env.npm_package_version} launched at ${new Date().toISOString()}`, false);
     }
   }
 
