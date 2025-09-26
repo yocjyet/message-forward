@@ -91,6 +91,9 @@ export class TelegramService {
       await this.bot.api.sendMessage({
         chat_id: chatId,
         text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}${linkLine}`,
+        link_preview_options: {
+          is_disabled: true,
+        },
       });
     } catch (error) {
       adze.error('Error sending forwarded message', error);
