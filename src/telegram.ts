@@ -11,6 +11,7 @@ export type ForwardedData = {
   from: string;
   with?: string[];
   content: string | FormattableString;
+  url?: string;
 };
 
 export class TelegramService {
@@ -83,12 +84,13 @@ export class TelegramService {
     const header = bold`${data.header}`;
     const from = `From: ${data.from}`;
     const withLine = data.with && data.with.length > 0 ? `With: ${data.with.join(', ')}` : '';
+    const linkLine = data.url ? `\n\n🔗 View in Zulip: ${data.url}` : '';
 
     const content = expandableBlockquote`${data.content}`;
     try {
       await this.bot.api.sendMessage({
         chat_id: chatId,
-        text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}`,
+        text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}${linkLine}`,
       });
     } catch (error) {
       adze.error('Error sending forwarded message', error);
@@ -96,7 +98,7 @@ export class TelegramService {
         chat_id: chatId,
         text: format`${header}\n${from}${
           withLine ? '\n' + withLine : ''
-        }\n\n${bold`Error:`} Cannot format forwarded message`,
+        }\n\n${bold`Error:`} Cannot format forwarded message${linkLine}`,
       });
     }
   }

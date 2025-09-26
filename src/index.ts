@@ -62,9 +62,10 @@ function requireEnv(name: string): string {
     }
 
     const content = convertMarkdownToGramio(preprocessContent(msg.content), { baseUrl: ZULIP_SITE });
+    const url = `${ZULIP_SITE}#narrow/near/${msg.id}`;
 
     // If applyMarkdown=true, msg.content is HTML; switch to parse_mode HTML in TelegramService if you prefer.
-    await telegram.sendForwardedToUser({ header, from, with: names, content });
+    await telegram.sendForwardedToUser({ header, from, with: names, content, url });
     adze.info(`Forwarded Zulip DM ${msg.id} from ${msg.sender_full_name}`);
   });
   await tgStart;
