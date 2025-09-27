@@ -102,21 +102,20 @@ export class TelegramService {
 
     const content = expandableBlockquote`${data.content}`;
     try {
-      await this.bot.api.sendMessage({
-        chat_id: chatId,
-        text: format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}${linkLine}`,
-        link_preview_options: {
-          is_disabled: true,
-        },
+      await this.send(chatId, format`${header}\n${from}${withLine ? '\n' + withLine : ''}\n\n${content}${linkLine}`, {
+        linkPreview: false,
       });
     } catch (error) {
       adze.error('[Telegram] Error sending forwarded message', error);
-      await this.bot.api.sendMessage({
-        chat_id: chatId,
-        text: format`${header}\n${from}${
+      await this.send(
+        chatId,
+        format`${header}\n${from}${
           withLine ? '\n' + withLine : ''
         }\n\n${bold`Error:`} Cannot format forwarded message${linkLine}`,
-      });
+        {
+          linkPreview: false,
+        }
+      );
     }
   }
 
