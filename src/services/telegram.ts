@@ -14,6 +14,16 @@ export type ForwardedData = {
   url?: string;
 };
 
+export type TelegramSendText =
+  | string
+  | {
+      toString(): string;
+    };
+
+export type TelegramSendOptions = {
+  linkPreview?: boolean;
+};
+
 export class TelegramService {
   private bot: Bot;
   private userChatId?: number;
@@ -71,15 +81,7 @@ export class TelegramService {
   }
 
   /** Send a plain text message to any chat id. */
-  async send(
-    chatId: number,
-    text:
-      | string
-      | {
-          toString(): string;
-        },
-    options?: { linkPreview?: boolean }
-  ) {
+  async send(chatId: number, text: TelegramSendText, options?: TelegramSendOptions) {
     await this.bot.api.sendMessage({
       chat_id: chatId,
       text,
@@ -120,9 +122,9 @@ export class TelegramService {
   }
 
   /** Convenience: send to the operator’s private DM if configured. */
-  async sendToUser(text: string) {
+  async sendToUser(text: TelegramSendText, options?: TelegramSendOptions) {
     if (!this.userChatId) return;
-    await this.send(this.userChatId, text);
+    await this.send(this.userChatId, text, options);
   }
 
   async sendForwardedToUser(data: ForwardedData) {
