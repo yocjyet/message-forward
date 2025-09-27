@@ -71,11 +71,25 @@ export class TelegramService {
   }
 
   /** Send a plain text message to any chat id. */
-  async send(chatId: number, text: string, markdown = true) {
+  async send(
+    chatId: number,
+    text:
+      | string
+      | {
+          toString(): string;
+        },
+    options?: { linkPreview?: boolean }
+  ) {
     await this.bot.api.sendMessage({
       chat_id: chatId,
       text,
-      parse_mode: markdown ? 'MarkdownV2' : undefined,
+      link_preview_options: options?.linkPreview
+        ? {
+            is_disabled: false,
+          }
+        : {
+            is_disabled: true,
+          },
     });
     adze.info(`[Telegram] Message sent to chat ${chatId}: ${text}`);
   }
@@ -107,9 +121,9 @@ export class TelegramService {
   }
 
   /** Convenience: send to the operator’s private DM if configured. */
-  async sendToUser(text: string, markdown = true) {
+  async sendToUser(text: string) {
     if (!this.userChatId) return;
-    await this.send(this.userChatId, text, markdown);
+    await this.send(this.userChatId, text);
   }
 
   async sendForwardedToUser(data: ForwardedData) {
