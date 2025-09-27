@@ -1,8 +1,11 @@
 import adze, { setup as adzeSetup } from 'adze';
 import { TelegramService } from './telegram';
 import { ZulipService } from './zulip';
-import { bold } from 'gramio';
+import { bold, code, format } from 'gramio';
 import { convertMarkdownToGramio } from './utils/markdown';
+import { WebhooksService } from './webhooks';
+
+const DEFAULT_WEBHOOKS_PORT = 6464;
 
 if (process.env.NODE_ENV !== 'production') {
   adzeSetup({
@@ -30,6 +33,8 @@ function requireEnv(name: string): string {
   const ZULIP_EMAIL = requireEnv('ZULIP_EMAIL');
   const ZULIP_KEY = requireEnv('ZULIP_KEY');
 
+  const WEBHOOKS_PORT = process.env.WEBHOOKS_PORT ? Number(process.env.WEBHOOKS_PORT) : DEFAULT_WEBHOOKS_PORT;
+
   adze.info(`All required environment variables are set`);
 
   // --- Init Telegram
@@ -48,8 +53,23 @@ function requireEnv(name: string): string {
   });
   adze.info('Zulip service initialized');
 
+  // --- Init Webhooks
+  const webhooks = new WebhooksService({
+    port: WEBHOOKS_PORT,
+    onHook: async (request) => {
+      await telegram.sendForwardedToUser({
+        header: '📩 Webhooks',
+        from: request.headers.get('host') ?? 'Unknown',
+        with: [request.url],
+        content: format`${code(await request.text())}`,
+      });
+    },
+  });
+  adze.info('Webhooks service initialized');
+
   adze.info('Starting services in parallel');
 
+  webhooks.start();
   const tgStart = telegram.launch();
   // --- Wire: Zulip DM -> Telegram DM
   await zulip.start(async (msg) => {
@@ -72,6 +92,7 @@ function requireEnv(name: string): string {
 
   // --- Shutdown hooks
   const stopAll = () => {
+    webhooks.stop();
     zulip.stop();
     telegram.stop('shutdown');
   };
