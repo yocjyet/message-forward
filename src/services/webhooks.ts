@@ -1,4 +1,5 @@
 import adze from 'adze';
+import type { Server } from 'bun';
 
 export interface WebhooksOptions {
   port: number;
@@ -11,6 +12,7 @@ export class WebhooksService {
     port: number;
     fetch: (request: Request) => Promise<Response>;
   };
+  private server: Server | null = null;
   constructor(opts: WebhooksOptions) {
     this.opts = opts;
     this.app = {
@@ -25,11 +27,13 @@ export class WebhooksService {
   }
 
   async start() {
-    const server = Bun.serve(this.app);
-    adze.info(`[Webhooks] Webhooks service started at ${server.url}`);
+    this.server = Bun.serve(this.app);
+    adze.info(`[Webhooks] Webhooks service started at ${this.server.url}`);
   }
 
   async stop() {
     adze.info('[Webhooks] Webhooks service stopped');
+    this.server?.stop();
+    this.server = null;
   }
 }
