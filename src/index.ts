@@ -56,13 +56,68 @@ function requireEnv(name: string): string {
   // --- Init Webhooks
   const webhooks = new WebhooksService({
     port: WEBHOOKS_PORT,
-    onHook: async (request) => {
-      await telegram.sendForwardedToUser({
-        header: '📩 Webhooks',
-        from: request.headers.get('host') ?? 'Unknown',
-        with: [request.url],
-        content: format`${pre(await request.text())}`,
-      });
+    onHook: async (request, info) => {
+      const contentType = request.headers.get('content-type') ?? '';
+      let bodyContent: string;
+
+      try {
+        if (contentType.includes('application/json')) {
+          const jsonData = await request.json();
+          bodyContent = JSON.stringify(jsonData, null, 2);
+        } else if (contentType.includes('application/x-www-form-urlencoded')) {
+          const formData = await request.formData();
+          const formEntries: Record<string, string> = {};
+          for (const [key, value] of formData.entries()) {
+            formEntries[key] = value.toString();
+          }
+          bodyContent = JSON.stringify(formEntries, null, 2);
+        } else if (contentType.includes('multipart/form-data')) {
+          const formData = await request.formData();
+          const formEntries: Record<string, string> = {};
+          for (const [key, value] of formData.entries()) {
+            formEntries[key] = value.toString();
+          }
+          bodyContent = JSON.stringify(formEntries, null, 2);
+        } else {
+          // Default to text for other content types
+          bodyContent = await request.text();
+        }
+      } catch (error) {
+        adze.warn('[Webhooks] Failed to parse request body, falling back to text', error);
+        bodyContent = await request.text();
+      }
+
+      // Create detailed request info
+      const requestDetails = [
+        `Method: ${info.method}`,
+        `URL: ${info.url}`,
+        `Timestamp: ${info.timestamp}`,
+        info.ip ? `IP: ${info.ip}` : null,
+        info.userAgent ? `User-Agent: ${info.userAgent}` : null,
+        info.contentType ? `Content-Type: ${info.contentType}` : null,
+        info.contentLength ? `Content-Length: ${info.contentLength}` : null,
+        info.origin ? `Origin: ${info.origin}` : null,
+        info.referer ? `Referer: ${info.referer}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      const header = bold`📩 Webhook Request`;
+      const at = `At: ${bold`${info.method}`} ${new URL(info.url).pathname}`;
+
+      const details = format`${bold`Request Details:`}\n${pre(requestDetails)}`;
+      const content = format`${bold`Request Body:`}\n${pre(bodyContent)}`;
+
+      const text = format`${header}\n${at}\n\n${details}\n\n${content}`;
+
+      try {
+        await telegram.sendToUser(text, {
+          linkPreview: false,
+        });
+      } catch (error) {
+        adze.error('[Telegram] Error sending forwarded message', error);
+        await telegram.sendToUser(format`${header}\n${at}\n\n${bold`Error:`} Cannot format forwarded message`);
+      }
     },
   });
   adze.info('Webhooks service initialized');

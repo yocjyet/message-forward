@@ -1,9 +1,22 @@
 import adze from 'adze';
 import type { Server } from 'bun';
 
+export interface WebhookRequestInfo {
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  userAgent?: string;
+  contentType?: string;
+  contentLength?: string;
+  origin?: string;
+  referer?: string;
+  timestamp: string;
+  ip?: string;
+}
+
 export interface WebhooksOptions {
   port: number;
-  onHook: (request: Request) => Promise<void>;
+  onHook: (request: Request, info: WebhookRequestInfo) => Promise<void>;
 }
 
 export class WebhooksService {
@@ -18,8 +31,32 @@ export class WebhooksService {
     this.app = {
       port: this.opts.port,
       fetch: async (request: Request) => {
-        adze.info('[Webhooks] Webhooks accessed at ', request.url);
-        await this.opts.onHook(request);
+        const info: WebhookRequestInfo = {
+          method: request.method,
+          url: request.url,
+          headers: Object.fromEntries(request.headers.entries()),
+          userAgent: request.headers.get('user-agent') || undefined,
+          contentType: request.headers.get('content-type') || undefined,
+          contentLength: request.headers.get('content-length') || undefined,
+          origin: request.headers.get('origin') || undefined,
+          referer: request.headers.get('referer') || undefined,
+          timestamp: new Date().toISOString(),
+          ip:
+            request.headers.get('x-forwarded-for') ||
+            request.headers.get('x-real-ip') ||
+            request.headers.get('cf-connecting-ip') ||
+            undefined,
+        };
+
+        adze.info('[Webhooks] Webhooks accessed', {
+          method: info.method,
+          url: info.url,
+          userAgent: info.userAgent,
+          contentType: info.contentType,
+          ip: info.ip,
+        });
+
+        await this.opts.onHook(request, info);
         return new Response('Success!');
       },
     };
