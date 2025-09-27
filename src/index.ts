@@ -1,7 +1,7 @@
 import adze, { setup as adzeSetup } from 'adze';
 import { TelegramService } from './services/telegram';
 import { ZulipService } from './services/zulip';
-import { bold, code, format } from 'gramio';
+import { bold, format, pre } from 'gramio';
 import { convertMarkdownToGramio } from './utils/markdown';
 import { WebhooksService } from './services/webhooks';
 
@@ -61,7 +61,7 @@ function requireEnv(name: string): string {
         header: '📩 Webhooks',
         from: request.headers.get('host') ?? 'Unknown',
         with: [request.url],
-        content: format`${code(await request.text())}`,
+        content: format`${pre(await request.text())}`,
       });
     },
   });
