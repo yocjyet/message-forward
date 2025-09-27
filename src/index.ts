@@ -1,9 +1,9 @@
 import adze, { setup as adzeSetup } from 'adze';
-import { TelegramService } from './telegram';
-import { ZulipService } from './zulip';
+import { TelegramService } from './services/telegram';
+import { ZulipService } from './services/zulip';
 import { bold, code, format } from 'gramio';
 import { convertMarkdownToGramio } from './utils/markdown';
-import { WebhooksService } from './webhooks';
+import { WebhooksService } from './services/webhooks';
 
 const DEFAULT_WEBHOOKS_PORT = 6464;
 
