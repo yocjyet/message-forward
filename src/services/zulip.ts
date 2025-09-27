@@ -29,12 +29,12 @@ export class ZulipService {
   private running = false;
 
   constructor(opts: ZulipOptions) {
-    adze.debug('Initializing ZulipService', opts);
+    adze.debug('[Zulip] Initializing ZulipService', opts);
     if (!opts.site || !opts.email || !opts.apiKey) {
       throw new Error('Zulip config missing (site/email/apiKey).');
     }
     this.opts = opts;
-    adze.info(`Zulip service initialized for site: ${opts.site}, email: ${opts.email}`);
+    adze.info(`[Zulip] Zulip service initialized for site: ${opts.site}, email: ${opts.email}`);
   }
 
   private authHeader() {
@@ -43,12 +43,12 @@ export class ZulipService {
   }
 
   private async registerQueue() {
-    adze.info('Registering Zulip event queue...');
+    adze.info('[Zulip] Registering Zulip event queue...');
     const body = new URLSearchParams();
     body.set('event_types', JSON.stringify(['message']));
     if (this.opts.applyMarkdown) {
       body.set('apply_markdown', 'true');
-      adze.debug('Markdown rendering enabled for Zulip messages');
+      adze.debug('[Zulip] Markdown rendering enabled for Zulip messages');
     }
 
     const res = await fetch(`${this.opts.site}/api/v1/register`, {
@@ -59,7 +59,7 @@ export class ZulipService {
 
     if (!res.ok) {
       const t = await res.text();
-      adze.error(`Zulip register failed: ${res.status} ${t}`);
+      adze.error(`[Zulip] Zulip register failed: ${res.status} ${t}`);
       throw new Error(`Zulip register failed: ${res.status} ${t}`);
     }
 
@@ -69,26 +69,28 @@ export class ZulipService {
       last_event_id: data.last_event_id ?? -1,
     };
 
-    adze.info(`Zulip queue registered successfully: ${this.state.queue_id}, last_event_id=${this.state.last_event_id}`);
+    adze.info(
+      `[Zulip] Zulip queue registered successfully: ${this.state.queue_id}, last_event_id=${this.state.last_event_id}`
+    );
   }
 
   /** Start long-polling loop; calls onDM for each private message to you. */
   async start(onDM: ZulipDMHandler) {
     if (this.running) {
-      adze.warn('Zulip service is already running');
+      adze.warn('[Zulip] Zulip service is already running');
       return;
     }
-    adze.info('Starting Zulip service...');
+    adze.info('[Zulip] Starting Zulip service...');
     this.running = true;
 
     if (!this.state) {
-      adze.info('No existing queue state found, registering new queue...');
+      adze.info('[Zulip] No existing queue state found, registering new queue...');
       await this.registerQueue();
     } else {
-      adze.info(`Resuming with existing queue: ${this.state.queue_id}`);
+      adze.info(`[Zulip] Resuming with existing queue: ${this.state.queue_id}`);
     }
 
-    adze.info('Starting Zulip event polling loop...');
+    adze.info('[Zulip] Starting Zulip event polling loop...');
     while (this.running) {
       try {
         const params = new URLSearchParams({
@@ -98,7 +100,7 @@ export class ZulipService {
         });
 
         adze.debug(
-          `Polling Zulip events from queue ${this.state!.queue_id}, last_event_id=${this.state!.last_event_id}`
+          `[Zulip] Polling Zulip events from queue ${this.state!.queue_id}, last_event_id=${this.state!.last_event_id}`
         );
         const res = await fetch(`${this.opts.site}/api/v1/events?${params}`, {
           headers: this.authHeader(),
@@ -108,12 +110,12 @@ export class ZulipService {
         if (!res.ok) {
           const txt = await res.text();
           if (txt.includes('BAD_EVENT_QUEUE_ID')) {
-            adze.warn('Zulip queue expired; re-registering…');
+            adze.warn('[Zulip] Zulip queue expired; re-registering…');
             this.state = null;
             await this.registerQueue();
             continue;
           }
-          adze.error(`Zulip events API error: ${res.status} ${txt}`);
+          adze.error(`[Zulip] Zulip events API error: ${res.status} ${txt}`);
           throw new Error(`Zulip events error: ${res.status} ${txt}`);
         }
 
@@ -121,7 +123,7 @@ export class ZulipService {
         const events = (data.events ?? []) as Array<any>;
 
         if (events.length > 0) {
-          adze.debug(`Received ${events.length} events from Zulip`);
+          adze.debug(`[Zulip] Received ${events.length} events from Zulip`);
         }
 
         for (const ev of events) {
@@ -135,7 +137,7 @@ export class ZulipService {
             //   continue;
             // }
 
-            adze.info(`Received private message from ${m.sender_full_name} (${m.sender_email})`);
+            adze.info(`[Zulip] Received private message from ${m.sender_full_name} (${m.sender_email})`);
             const normalized: ZulipPrivateMessage = {
               id: m.id,
               sender_full_name: m.sender_full_name,
@@ -149,28 +151,28 @@ export class ZulipService {
           }
         }
       } catch (err) {
-        adze.error('Zulip polling error', err);
+        adze.error('[Zulip] Zulip polling error', err);
         // gentle backoff
-        adze.info('Waiting 3 seconds before retrying...');
+        adze.info('[Zulip] Waiting 3 seconds before retrying...');
         await new Promise((r) => setTimeout(r, 3000));
         if (!this.state) {
           try {
-            adze.info('Attempting to re-register Zulip queue after error...');
+            adze.info('[Zulip] Attempting to re-register Zulip queue after error...');
             await this.registerQueue();
           } catch (e) {
-            adze.error('Failed to re-register Zulip queue', e);
-            adze.info('Waiting 5 seconds before retrying queue registration...');
+            adze.error('[Zulip] Failed to re-register Zulip queue', e);
+            adze.info('[Zulip] Waiting 5 seconds before retrying queue registration...');
             await new Promise((r) => setTimeout(r, 5000));
           }
         }
       }
     }
-    adze.info('Zulip polling loop ended');
+    adze.info('[Zulip] Zulip polling loop ended');
   }
 
   stop() {
-    adze.info('Stopping Zulip service...');
+    adze.info('[Zulip] Stopping Zulip service...');
     this.running = false;
-    adze.info('Zulip service stopped');
+    adze.info('[Zulip] Zulip service stopped');
   }
 }

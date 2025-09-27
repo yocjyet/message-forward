@@ -16,20 +16,20 @@ export class WebhooksService {
     this.app = {
       port: this.opts.port,
       fetch: async (request: Request) => {
-        adze.info('Webhooks accessed at ', request.url);
+        adze.info('[Webhooks] Webhooks accessed at ', request.url);
         await this.opts.onHook(request);
         return new Response('Success!');
       },
     };
-    adze.info('Webhooks service initialized');
+    adze.info('[Webhooks] Webhooks service initialized');
   }
 
   async start() {
     const server = Bun.serve(this.app);
-    adze.info(`Webhooks service started at ${server.url}`);
+    adze.info(`[Webhooks] Webhooks service started at ${server.url}`);
   }
 
   async stop() {
-    adze.info('Webhooks service stopped');
+    adze.info('[Webhooks] Webhooks service stopped');
   }
 }
